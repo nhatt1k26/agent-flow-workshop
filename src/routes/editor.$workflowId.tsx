@@ -299,12 +299,20 @@ function EditorPage() {
               onNodeClick={(_, n) => setSelected(n.id)}
               onPaneClick={() => setSelected(null)}
               fitView
+              fitViewOptions={{ padding: 0.25, maxZoom: 1 }}
               proOptions={{ hideAttribution: true }}
               defaultEdgeOptions={{ animated: true }}
             >
               <Background variant={BackgroundVariant.Dots} gap={22} size={1.5} color="var(--grid)" />
               <Controls showInteractive={false} />
-              <MiniMap pannable zoomable maskColor="oklch(0.17 0.018 255 / 0.7)" />
+              <MiniMap
+                pannable
+                zoomable
+                bgColor="oklch(0.19 0.019 256)"
+                maskColor="oklch(0.13 0.018 255 / 0.75)"
+                nodeColor="oklch(0.35 0.03 256)"
+                nodeStrokeWidth={0}
+              />
             </ReactFlow>
           </div>
 
