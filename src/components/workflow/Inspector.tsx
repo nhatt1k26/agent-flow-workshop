@@ -297,7 +297,7 @@ export function Inspector({ data, agents, upstream, onChange, onDelete, onClose 
                 <Field label="Chế độ context">
                   <Select
                     value={data.contextMode ?? "last"}
-                    onValueChange={(v) => onChange({ contextMode: v as NodeConfig["contextMode"] })}
+                    onValueChange={(v) => onChange({ contextMode: v as ContextMode })}
                   >
                     <SelectTrigger className="h-9">
                       <SelectValue />
