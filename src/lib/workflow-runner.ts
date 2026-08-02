@@ -59,11 +59,11 @@ export function executeWorkflow(wf: Workflow, input: string): RunHandle {
     nodeId: n.id,
     label: n.data.label,
     kind: n.data.kind,
-    status: "pending",
+    status: "pending" as const,
     input: "",
     output: "",
-    model: n.data.model,
-    agent: n.data.agentId,
+    model: n.data.model ?? "",
+    agent: n.data.agentId ?? "",
     tokens: 0,
     durationMs: 0,
     startedAt: "",
@@ -85,9 +85,10 @@ export function executeWorkflow(wf: Workflow, input: string): RunHandle {
     let carry = input;
     let total = 0;
     for (let i = 0; i < nodes.length; i++) {
-      const node = nodes[i];
+      const node = nodes[i]!;
+      const base = steps[i]!;
       steps[i] = {
-        ...steps[i],
+        ...base,
         status: "running",
         input: carry.slice(0, 500),
         startedAt: new Date().toISOString(),
@@ -100,7 +101,7 @@ export function executeWorkflow(wf: Workflow, input: string): RunHandle {
       const tokens = node.data.kind === "agent" ? 200 + Math.round(Math.random() * 900) : 0;
       total += tokens;
       steps[i] = {
-        ...steps[i],
+        ...steps[i]!,
         status: failed ? "error" : "success",
         output: failed ? "Lỗi mô phỏng: hết thời gian chờ từ nhà cung cấp." : output,
         tokens,
@@ -108,7 +109,8 @@ export function executeWorkflow(wf: Workflow, input: string): RunHandle {
       };
       store.updateRun(runId, { steps: [...steps], totalTokens: total });
       if (failed) {
-        for (let j = i + 1; j < steps.length; j++) steps[j] = { ...steps[j], status: "skipped" };
+        for (let j = i + 1; j < steps.length; j++)
+          steps[j] = { ...steps[j]!, status: "skipped" };
         store.updateRun(runId, {
           steps: [...steps],
           status: "error",
