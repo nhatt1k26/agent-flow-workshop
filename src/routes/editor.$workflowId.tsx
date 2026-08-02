@@ -116,7 +116,8 @@ function EditorPage() {
     () =>
       nodes.map((n) => {
         const step = activeRun?.steps.find((s) => s.nodeId === n.id);
-        const agentName = agents.find((a) => a.id === (n.data as NodeConfig).agentId)?.name;
+        const cfg = n.data as unknown as NodeConfig;
+        const agentName = agents.find((a) => a.id === cfg.agentId)?.name;
         return {
           ...n,
           data: { ...n.data, runStatus: step?.status, agentName },
