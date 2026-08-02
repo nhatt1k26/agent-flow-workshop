@@ -94,8 +94,8 @@ export interface RunStep {
   status: StepStatus;
   input: string;
   output: string;
-  model?: string;
-  agent?: string;
+  model: string;
+  agent: string;
   tokens: number;
   durationMs: number;
   startedAt: string;
