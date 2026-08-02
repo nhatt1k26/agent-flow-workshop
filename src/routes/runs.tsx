@@ -1,10 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
-import { CheckCircle2, AlertTriangle, Loader2, Trash2 } from "lucide-react";
+import { CheckCircle2, AlertTriangle, Loader2 } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { useStore, store } from "@/lib/workflow-store";
+import { useStore } from "@/lib/workflow-store";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/runs")({
@@ -42,16 +41,6 @@ function RunsPage() {
               Mỗi lần chạy lưu lại input, output và chi phí của từng node.
             </p>
           </div>
-          {runs.length > 0 && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => runs.forEach(() => store.updateRun("", {}))}
-              className="hidden"
-            >
-              <Trash2 className="mr-1.5 size-3.5" /> Xoá
-            </Button>
-          )}
         </div>
 
         {runs.length === 0 && (

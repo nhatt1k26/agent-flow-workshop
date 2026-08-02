@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AgentsRouteImport } from './routes/agents'
+import { Route as RunsRouteImport } from './routes/runs'
 import { Route as EditorWorkflowIdRouteImport } from './routes/editor.$workflowId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +24,11 @@ const AgentsRoute = AgentsRouteImport.update({
   path: '/agents',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RunsRoute = RunsRouteImport.update({
+  id: '/runs',
+  path: '/runs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EditorWorkflowIdRoute = EditorWorkflowIdRouteImport.update({
   id: '/editor/$workflowId',
   path: '/editor/$workflowId',
@@ -32,30 +38,34 @@ const EditorWorkflowIdRoute = EditorWorkflowIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/agents': typeof AgentsRoute
+  '/runs': typeof RunsRoute
   '/editor/$workflowId': typeof EditorWorkflowIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agents': typeof AgentsRoute
+  '/runs': typeof RunsRoute
   '/editor/$workflowId': typeof EditorWorkflowIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/agents': typeof AgentsRoute
+  '/runs': typeof RunsRoute
   '/editor/$workflowId': typeof EditorWorkflowIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/agents' | '/editor/$workflowId'
+  fullPaths: '/' | '/agents' | '/runs' | '/editor/$workflowId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/agents' | '/editor/$workflowId'
-  id: '__root__' | '/' | '/agents' | '/editor/$workflowId'
+  to: '/' | '/agents' | '/runs' | '/editor/$workflowId'
+  id: '__root__' | '/' | '/agents' | '/runs' | '/editor/$workflowId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AgentsRoute: typeof AgentsRoute
+  RunsRoute: typeof RunsRoute
   EditorWorkflowIdRoute: typeof EditorWorkflowIdRoute
 }
 
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AgentsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/runs': {
+      id: '/runs'
+      path: '/runs'
+      fullPath: '/runs'
+      preLoaderRoute: typeof RunsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/editor/$workflowId': {
       id: '/editor/$workflowId'
       path: '/editor/$workflowId'
@@ -88,6 +105,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AgentsRoute: AgentsRoute,
+  RunsRoute: RunsRoute,
   EditorWorkflowIdRoute: EditorWorkflowIdRoute,
 }
 export const routeTree = rootRouteImport
