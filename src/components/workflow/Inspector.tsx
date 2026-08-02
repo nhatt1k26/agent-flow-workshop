@@ -13,7 +13,15 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { MODELS, TOOLS, type Agent, type NodeConfig, type Port, type PortType } from "@/lib/workflow-types";
+import {
+  MODELS,
+  TOOLS,
+  type Agent,
+  type ContextMode,
+  type NodeConfig,
+  type Port,
+  type PortType,
+} from "@/lib/workflow-types";
 import { uid } from "@/lib/workflow-store";
 
 const PORT_TYPES: PortType[] = ["text", "json", "number", "boolean", "file", "any"];
