@@ -20,16 +20,18 @@ import {
 import "@xyflow/react/dist/style.css";
 import { ArrowLeft, PanelBottom, Save, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import type { MouseEvent as ReactMouseEvent } from "react";
 import { AppShell } from "@/components/AppShell";
 import { NodePalette } from "@/components/workflow/NodePalette";
 import { Inspector } from "@/components/workflow/Inspector";
 import { RunPanel } from "@/components/workflow/RunPanel";
 import { WorkflowNodeCard } from "@/components/workflow/WorkflowNodeCard";
+import { BreakpointEdge } from "@/components/workflow/BreakpointEdge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { store, uid, useStore } from "@/lib/workflow-store";
-import { executeWorkflow } from "@/lib/workflow-runner";
+import { executeWorkflow, type RunHandle } from "@/lib/workflow-runner";
 import { NODE_META, type NodeConfig, type NodeKind } from "@/lib/workflow-types";
 
 export const Route = createFileRoute("/editor/$workflowId")({
@@ -58,6 +60,9 @@ export const Route = createFileRoute("/editor/$workflowId")({
 });
 
 const nodeTypes = { wf: WorkflowNodeCard };
+const edgeTypes = { bp: BreakpointEdge };
+
+type WfEdge = Edge & { breakpoint?: boolean };
 
 function defaultConfig(kind: NodeKind): NodeConfig {
   const base: NodeConfig = {
@@ -100,6 +105,7 @@ function EditorPage() {
   const [running, setRunning] = useState(false);
   const loaded = useRef(false);
   const wrapper = useRef<HTMLDivElement>(null);
+  const handleRef = useRef<RunHandle | null>(null);
   const { screenToFlowPosition } = useReactFlow();
 
   useEffect(() => {
@@ -120,10 +126,31 @@ function EditorPage() {
         const agentName = agents.find((a) => a.id === cfg.agentId)?.name;
         return {
           ...n,
-          data: { ...n.data, runStatus: step?.status, agentName },
+          data: {
+            ...n.data,
+            runStatus: step?.status,
+            agentName,
+            paused: activeRun?.pausedAt === n.id,
+          },
         };
       }),
     [nodes, activeRun, agents],
+  );
+
+  const displayEdges = useMemo(
+    () =>
+      edges.map((e) => {
+        const we = e as WfEdge;
+        return {
+          ...we,
+          type: "bp" as const,
+          data: {
+            breakpoint: we.breakpoint,
+            paused: !!activeRun?.pausedAt && e.target === activeRun.pausedAt,
+          },
+        };
+      }),
+    [edges, activeRun],
   );
 
   const onNodesChange = useCallback((c: NodeChange[]) => {
@@ -136,6 +163,15 @@ function EditorPage() {
   }, []);
   const onConnect = useCallback((c: Connection) => {
     setEdges((eds) => addEdge({ ...c, id: uid("e"), animated: true }, eds));
+    setDirty(true);
+  }, []);
+  const onEdgeDoubleClick = useCallback((_e: ReactMouseEvent, edge: Edge) => {
+    setEdges((eds) =>
+      eds.map((x) => {
+        const xe = x as WfEdge;
+        return xe.id === edge.id ? { ...xe, breakpoint: !xe.breakpoint } : xe;
+      }),
+    );
     setDirty(true);
   }, []);
 
@@ -194,6 +230,7 @@ function EditorPage() {
       edges: edges as unknown as typeof workflow.edges,
     };
     const handle = executeWorkflow(snapshot, runInput);
+    handleRef.current = handle;
     setRunId(handle.runId);
     handle.promise.finally(() => setRunning(false));
   }, [workflow, nodes, edges, runInput]);
@@ -291,17 +328,19 @@ function EditorPage() {
           >
             <ReactFlow
               nodes={displayNodes}
-              edges={edges}
+              edges={displayEdges}
               nodeTypes={nodeTypes}
+              edgeTypes={edgeTypes}
               onNodesChange={onNodesChange}
               onEdgesChange={onEdgesChange}
               onConnect={onConnect}
+              onEdgeDoubleClick={onEdgeDoubleClick}
               onNodeClick={(_, n) => setSelected(n.id)}
               onPaneClick={() => setSelected(null)}
               fitView
               fitViewOptions={{ padding: 0.25, maxZoom: 1 }}
               proOptions={{ hideAttribution: true }}
-              defaultEdgeOptions={{ animated: true }}
+              defaultEdgeOptions={{ animated: true, type: "bp" }}
             >
               <Background variant={BackgroundVariant.Dots} gap={22} size={1.5} color="var(--grid)" />
               <Controls showInteractive={false} />
@@ -323,6 +362,7 @@ function EditorPage() {
               input={runInput}
               onInput={setRunInput}
               onRun={run}
+              onResume={(step) => handleRef.current?.resume(step)}
               onClose={() => setShowRun(false)}
             />
           )}

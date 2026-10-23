@@ -1,5 +1,15 @@
 import { useState } from "react";
-import { Play, Square, ChevronRight, Loader2, CheckCircle2, AlertTriangle, Clock } from "lucide-react";
+import {
+  Play,
+  Square,
+  ChevronRight,
+  Loader2,
+  CheckCircle2,
+  AlertTriangle,
+  Clock,
+  SkipForward,
+  Pause,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -12,10 +22,11 @@ interface Props {
   input: string;
   onInput: (v: string) => void;
   onRun: () => void;
+  onResume: (step?: boolean) => void;
   onClose: () => void;
 }
 
-export function RunPanel({ run, running, input, onInput, onRun, onClose }: Props) {
+export function RunPanel({ run, running, input, onInput, onRun, onResume, onClose }: Props) {
   const [open, setOpen] = useState<string | null>(null);
   return (
     <div className="flex h-72 shrink-0 flex-col border-t border-border bg-sidebar">
@@ -31,12 +42,32 @@ export function RunPanel({ run, running, input, onInput, onRun, onClose }: Props
               run.status === "success" && "border-success/50 text-success",
               run.status === "error" && "border-destructive/50 text-destructive",
               run.status === "running" && "border-primary/50 text-primary",
+              run.status === "paused" && "border-warning/60 text-warning",
             )}
           >
-            {run.status} · {run.totalTokens} tokens
+            {run.status === "paused" && run.pausedAt
+              ? `debug · dừng trước "${run.steps.find((s) => s.nodeId === run.pausedAt)?.label ?? run.pausedAt}"`
+              : `${run.status} · ${run.totalTokens} tokens`}
           </Badge>
         )}
         <div className="ml-auto flex items-center gap-2">
+          {run?.status === "paused" && (
+            <>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 border-warning/40 text-xs text-warning hover:bg-warning/10"
+                onClick={() => onResume(true)}
+              >
+                <SkipForward className="mr-1 size-3" />
+                Bước 1 node
+              </Button>
+              <Button size="sm" className="h-7 text-xs" onClick={() => onResume(false)}>
+                <Play className="mr-1 size-3" />
+                Tiếp tục
+              </Button>
+            </>
+          )}
           <Button size="sm" className="h-7 text-xs" onClick={onRun} disabled={running}>
             {running ? (
               <Loader2 className="mr-1 size-3 animate-spin" />
@@ -60,6 +91,11 @@ export function RunPanel({ run, running, input, onInput, onRun, onClose }: Props
             className="flex-1 resize-none text-xs"
             placeholder="Nhập dữ liệu đầu vào cho trigger…"
           />
+          <p className="rounded-md border border-border/60 bg-background/60 p-2 text-[10px] leading-relaxed text-muted-foreground">
+            <span className="font-semibold text-warning">Debug:</span> nhấp đúp vào dây nối giữa
+            2 node để đặt/bỏ breakpoint. Flow sẽ dừng trước node kế tiếp để bạn kiểm tra
+            input/output.
+          </p>
         </div>
 
         <div className="min-h-0 overflow-y-auto p-3">

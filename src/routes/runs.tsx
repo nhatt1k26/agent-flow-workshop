@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
-import { CheckCircle2, AlertTriangle, Loader2 } from "lucide-react";
+import { CheckCircle2, AlertTriangle, Loader2, Pause } from "lucide-react";
 import { AppShell } from "@/components/AppShell";
 import { Badge } from "@/components/ui/badge";
 import { useStore } from "@/lib/workflow-store";
@@ -64,6 +64,8 @@ function RunsPage() {
                   <Loader2 className="size-4 animate-spin text-primary" />
                 ) : r.status === "success" ? (
                   <CheckCircle2 className="size-4 text-success" />
+                ) : r.status === "paused" ? (
+                  <Pause className="size-4 text-warning" />
                 ) : (
                   <AlertTriangle className="size-4 text-destructive" />
                 )}
@@ -97,6 +99,7 @@ function RunsPage() {
                               s.status === "success" && "text-success",
                               s.status === "error" && "text-destructive",
                               s.status === "skipped" && "text-muted-foreground",
+                              s.status === "waiting" && "text-warning",
                             )}
                           >
                             {s.status}
