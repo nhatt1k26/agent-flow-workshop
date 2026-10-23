@@ -320,17 +320,19 @@ function EditorPage() {
           >
             <ReactFlow
               nodes={displayNodes}
-              edges={edges}
+              edges={displayEdges}
               nodeTypes={nodeTypes}
+              edgeTypes={edgeTypes}
               onNodesChange={onNodesChange}
               onEdgesChange={onEdgesChange}
               onConnect={onConnect}
+              onEdgeDoubleClick={onEdgeDoubleClick}
               onNodeClick={(_, n) => setSelected(n.id)}
               onPaneClick={() => setSelected(null)}
               fitView
               fitViewOptions={{ padding: 0.25, maxZoom: 1 }}
               proOptions={{ hideAttribution: true }}
-              defaultEdgeOptions={{ animated: true }}
+              defaultEdgeOptions={{ animated: true, type: "bp" }}
             >
               <Background variant={BackgroundVariant.Dots} gap={22} size={1.5} color="var(--grid)" />
               <Controls showInteractive={false} />
@@ -352,6 +354,7 @@ function EditorPage() {
               input={runInput}
               onInput={setRunInput}
               onRun={run}
+              onResume={(step) => handleRef.current?.resume(step)}
               onClose={() => setShowRun(false)}
             />
           )}
