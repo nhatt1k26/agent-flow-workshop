@@ -47,7 +47,7 @@ export function BreakpointEdge({
             <span
               className={cn(
                 "grid size-5 place-items-center rounded-full border-2 border-destructive bg-background shadow-md shadow-black/40",
-                paused && "animate-ping-slow ring-4 ring-destructive/40",
+                paused && "animate-pulse ring-4 ring-destructive/40",
               )}
             >
               <Pause className="size-3 text-destructive" strokeWidth={2.5} />
