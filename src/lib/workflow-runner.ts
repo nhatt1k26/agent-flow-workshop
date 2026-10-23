@@ -50,6 +50,8 @@ function fakeOutput(node: WorkflowNode, input: string): string {
 export interface RunHandle {
   runId: string;
   promise: Promise<void>;
+  /** Mở khoá breakpoint. step = true: chạy đúng 1 node rồi dừng tiếp. */
+  resume: (step?: boolean) => void;
 }
 
 export function executeWorkflow(wf: Workflow, input: string): RunHandle {
@@ -81,19 +83,52 @@ export function executeWorkflow(wf: Workflow, input: string): RunHandle {
   };
   store.addRun(run);
 
+  // ===== debug pause machinery =====
+  let resolvePause: (() => void) | null = null;
+  let forcePauseNext = false;
+
+  const awaitResume = () =>
+    new Promise<void>((res) => {
+      resolvePause = res;
+    });
+
+  const resume = (step = false) => {
+    forcePauseNext = step;
+    resolvePause?.();
+    resolvePause = null;
+  };
+
   const promise = (async () => {
     let carry = input;
     let total = 0;
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i]!;
       const base = steps[i]!;
+
+      // --- debug: dừng trước node nếu dây nối vào nó có breakpoint ---
+      if (i > 0) {
+        const hitBp = wf.edges.some(
+          (e) => e.breakpoint && e.target === node.id,
+        );
+        if (hitBp || forcePauseNext) {
+          forcePauseNext = false;
+          steps[i] = { ...base, status: "waiting" };
+          store.updateRun(runId, {
+            steps: [...steps],
+            status: "paused",
+            pausedAt: node.id,
+          });
+          await awaitResume();
+        }
+      }
+
       steps[i] = {
-        ...base,
+        ...steps[i]!,
         status: "running",
         input: carry.slice(0, 500),
         startedAt: new Date().toISOString(),
       };
-      store.updateRun(runId, { steps: [...steps] });
+      store.updateRun(runId, { steps: [...steps], status: "running", pausedAt: undefined });
       const dur = 350 + Math.round(Math.random() * 700);
       await sleep(dur);
       const failed = node.data.kind !== "trigger" && Math.random() < 0.04;
@@ -127,5 +162,5 @@ export function executeWorkflow(wf: Workflow, input: string): RunHandle {
     });
   })();
 
-  return { runId, promise };
+  return { runId, promise, resume };
 }
