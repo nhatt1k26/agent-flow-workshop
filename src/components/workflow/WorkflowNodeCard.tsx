@@ -9,6 +9,7 @@ import {
   Zap,
   AlertTriangle,
   Loader2,
+  Pause,
 } from "lucide-react";
 import type { NodeConfig, NodeKind, StepStatus } from "@/lib/workflow-types";
 import { kindStyles } from "./node-visuals";
@@ -24,7 +25,7 @@ const icons: Record<NodeKind, typeof Bot> = {
   output: CheckCircle2,
 };
 
-export type WfNodeData = NodeConfig & { runStatus?: StepStatus; agentName?: string };
+export type WfNodeData = NodeConfig & { runStatus?: StepStatus; agentName?: string; paused?: boolean };
 
 export function WorkflowNodeCard({ data, selected }: NodeProps) {
   const d = data as unknown as WfNodeData;
@@ -41,6 +42,8 @@ export function WorkflowNodeCard({ data, selected }: NodeProps) {
         running && "animate-pulse",
         d.runStatus === "success" && "border-success/60",
         d.runStatus === "error" && "border-destructive/70",
+        d.runStatus === "waiting" && "border-warning/70",
+        d.paused && "ring-2 ring-warning/70 border-warning/70",
       )}
     >
       {d.kind !== "trigger" && (
@@ -58,6 +61,7 @@ export function WorkflowNodeCard({ data, selected }: NodeProps) {
         {running && <Loader2 className="size-3.5 animate-spin text-primary" />}
         {d.runStatus === "success" && <CheckCircle2 className="size-3.5 text-success" />}
         {d.runStatus === "error" && <AlertTriangle className="size-3.5 text-destructive" />}
+        {d.runStatus === "waiting" && <Pause className="size-3.5 text-warning" />}
       </div>
 
       <div className="space-y-1.5 px-3 py-2">
