@@ -110,8 +110,7 @@ export interface Run {
   status: "running" | "paused" | "success" | "error";
   startedAt: string;
   finishedAt?: string;
-  /** node đang chờ resume khi debug pause */
-  pausedAt?: string;
+  pausedAt?: string | undefined;
   input: string;
   steps: RunStep[];
   totalTokens: number;

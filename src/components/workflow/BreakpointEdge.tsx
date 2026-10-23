@@ -35,7 +35,12 @@ export function BreakpointEdge({
 
   return (
     <>
-      <BaseEdge id={id} path={path} markerEnd={markerEnd} style={style} />
+      <BaseEdge
+        id={id}
+        path={path}
+        {...(markerEnd ? { markerEnd } : {})}
+        {...(style ? { style } : {})}
+      />
       {bp && (
         <EdgeLabelRenderer>
           <div

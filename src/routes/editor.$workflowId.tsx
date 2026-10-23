@@ -62,6 +62,8 @@ export const Route = createFileRoute("/editor/$workflowId")({
 const nodeTypes = { wf: WorkflowNodeCard };
 const edgeTypes = { bp: BreakpointEdge };
 
+type WfEdge = Edge & { breakpoint?: boolean };
+
 function defaultConfig(kind: NodeKind): NodeConfig {
   const base: NodeConfig = {
     label: NODE_META[kind].label,
@@ -137,14 +139,17 @@ function EditorPage() {
 
   const displayEdges = useMemo(
     () =>
-      edges.map((e) => ({
-        ...e,
-        type: "bp" as const,
-        data: {
-          breakpoint: e.breakpoint,
-          paused: !!activeRun?.pausedAt && e.target === activeRun.pausedAt,
-        },
-      })),
+      edges.map((e) => {
+        const we = e as WfEdge;
+        return {
+          ...we,
+          type: "bp" as const,
+          data: {
+            breakpoint: we.breakpoint,
+            paused: !!activeRun?.pausedAt && e.target === activeRun.pausedAt,
+          },
+        };
+      }),
     [edges, activeRun],
   );
 
@@ -162,7 +167,10 @@ function EditorPage() {
   }, []);
   const onEdgeDoubleClick = useCallback((_e: ReactMouseEvent, edge: Edge) => {
     setEdges((eds) =>
-      eds.map((x) => (x.id === edge.id ? { ...x, breakpoint: !x.breakpoint } : x)),
+      eds.map((x) => {
+        const xe = x as WfEdge;
+        return xe.id === edge.id ? { ...xe, breakpoint: !xe.breakpoint } : xe;
+      }),
     );
     setDirty(true);
   }, []);
