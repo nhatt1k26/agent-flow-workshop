@@ -60,6 +60,8 @@ export interface WorkflowEdge {
   targetHandle?: string | null;
   label?: string;
   animated?: boolean;
+  /** debug mode: dừng flow trước khi chạy node target */
+  breakpoint?: boolean;
 }
 
 export interface Workflow {
@@ -85,7 +87,7 @@ export interface Agent {
   createdAt: string;
 }
 
-export type StepStatus = "pending" | "running" | "success" | "error" | "skipped";
+export type StepStatus = "pending" | "waiting" | "running" | "success" | "error" | "skipped";
 
 export interface RunStep {
   nodeId: string;
@@ -105,9 +107,11 @@ export interface Run {
   id: string;
   workflowId: string;
   workflowName: string;
-  status: "running" | "success" | "error";
+  status: "running" | "paused" | "success" | "error";
   startedAt: string;
   finishedAt?: string;
+  /** node đang chờ resume khi debug pause */
+  pausedAt?: string;
   input: string;
   steps: RunStep[];
   totalTokens: number;
